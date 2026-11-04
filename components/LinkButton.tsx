@@ -3,18 +3,23 @@ import Link from "next/link"
 //
 
 export default function LinkButton(
-{ 
-    title 
-} : { 
-    title: string 
+{
+    title
+} : {
+    title: string
 }) {
     return (
-        <Link 
-            className="bg-background w-50 h-10 flex justify-center items-center border border-border rounded-md transition-all cursor-pointer hover:bg-primary"
-            href={`/parley?scenario=${title}`}
+        <Link
+            className="
+                flex items-center rounded-xl border border-border bg-surface/70 p-4 font-medium transition-all 
+                hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-primary
+            "
+            href={{ 
+                pathname: "/parley", 
+                query: { scenario: title } 
+            }}
         >
             {title}
         </Link>
     )
 }
-

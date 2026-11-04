@@ -10,6 +10,7 @@
   --surface: #1a1b1f;
   --danger: #e5484d;
   --success: #30a46c;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -35,15 +36,41 @@ body {
   color: var(--foreground);
 }
 
-h1 {
-  @apply text-7xl underline;
+::selection {
+  background-color: color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
-h2 {
-  @apply text-4xl;
+/* Firefox only; Chrome ignores ::-webkit-scrollbar when scrollbar-color is set */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
 }
 
-.input_box {
-  @apply bg-background rounded-sm w-full appearance-none border border-border p-2 focus:outline-none focus:ring-0
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+/* In the components layer so utilities like pr-12 can override it */
+@layer components {
+  .input_box {
+    @apply bg-background rounded-lg w-full appearance-none border border-border px-3 py-2.5 transition-colors placeholder:text-accent/70 focus:outline-none focus:border-primary
+  }
+}
