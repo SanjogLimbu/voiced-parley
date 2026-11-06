@@ -5,7 +5,6 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import LoadingPage from "@/components/LoadingPage"
 import SubmitButton from "@/components/SubmitButton"
-import LinkButton from "@/components/LinkButton"
 
 //
 
@@ -33,9 +32,15 @@ function TextBubble({ text, role }: Message) {
 
 function Content() {
     const searchParams = useSearchParams()
-    const scenario = searchParams.get("scenario")?.trim()
+    const scenario = searchParams.get("scenario")
+    const language = searchParams.get("language")
+
     const [messages, setMessages] = useState<Message[]>([])
-    const [draft, setDraft] = useState("")
+    const [message, setMessage] = useState("")
+    const [starting, setStarting] = useState(false) 
+    const [error, setError] = useState("")
+
+    const conversationActive = messages.length > 0
     const listRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -59,6 +64,84 @@ function Content() {
                 </Link>
             </main>
         )
+    }
+
+
+    async function startConversation() {
+        setStarting(true)
+
+        try {
+            const response = await fetch(
+                "/api/start",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        scenario,
+                        language
+                    })
+                }
+            )
+
+            
+            if (response.ok) {
+                const data = await response.json()
+
+                setMessages((previous) => [
+                    ...previous,
+                    { 
+                        text: data.text, 
+                        role: "Bot" 
+                    },
+                ])
+            }
+        }
+        catch {
+            setError("A network error occured.")
+        }
+
+
+        setStarting(false)
+    }
+
+
+    async function sendMessage(event: React.SubmitEvent<HTMLElement>) {
+        event.preventDefault()
+
+        try {
+            const response = await fetch(
+                "/api/chat",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        scenario,
+                        language,
+                        message
+                    })
+                }
+            )
+
+            
+            if (response.ok) {
+                const data = await response.json()
+
+                setMessages((previous) => [
+                    ...previous,
+                    { 
+                        text: data.text, 
+                        role: "Bot" 
+                    },
+                ])
+            }
+        }
+        catch {
+            setError("A network error occured.")
+        }
     }
 
 
@@ -90,12 +173,20 @@ function Content() {
                     </header>
 
                     <div ref={listRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-6">
-                        {messages.length === 0 ? (
+                        {!conversationActive ? (
                             <div className="m-auto flex max-w-xs flex-col items-center text-center">
-                                <button className="
-                                    w-40 h-10 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary
-                                ">
-                                    Start
+                                <button 
+                                    disabled={starting}
+                                    onClick={startConversation}
+                                    className="
+                                        w-40 h-10 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary
+                                    "
+                                >
+                                    {starting ? (
+                                        "..." 
+                                    ) : (
+                                        "Start"
+                                    )}
                                 </button>
                             </div>
                         ) : messages.map((message, i) => (
@@ -103,27 +194,30 @@ function Content() {
                         ))}
                     </div>
 
-                    <form
-                        className="flex items-center gap-2 border-t border-border p-3"
-                    >
-                        <input
-                            className="input_box"
-                            placeholder="Type your message..."
-                            aria-label="Message"
-                            autoFocus
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                        />
-
-                        <button
-                            type="submit"
-                            aria-label="Send message"
-                            disabled={!draft.trim()}
-                            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-primary text-white transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:bg-border disabled:text-accent"
+                    {conversationActive && (
+                        <form
+                            className="flex items-center gap-2 border-t border-border p-3"
+                            onSubmit={(e) => sendMessage(e)}
                         >
-                            <SubmitButton />
-                        </button>
-                    </form>
+                            <input
+                                className="input_box"
+                                placeholder="Type your message..."
+                                aria-label="Message"
+                                autoFocus
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                            />
+
+                            <button
+                                type="submit"
+                                aria-label="Send message"
+                                disabled={!message.trim()}
+                                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-primary text-white transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:bg-border disabled:text-accent"
+                            >
+                                <SubmitButton />
+                            </button>
+                        </form>
+                    )}
                 </div>
             </main>
         </>
