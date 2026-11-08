@@ -9,6 +9,7 @@ import SubmitButton from "@/components/SubmitButton"
 //
 
 type Message = {
+    id: string
     text: string
     role: "User" | "Bot"
 }
@@ -39,6 +40,7 @@ function Content() {
     const [message, setMessage] = useState("")
     const [starting, setStarting] = useState(false) 
     const [error, setError] = useState("")
+    const [sending, setSending] = useState(false)
 
     const conversationActive = messages.length > 0
     const listRef = useRef<HTMLDivElement>(null)
@@ -46,6 +48,30 @@ function Content() {
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" })
     }, [messages])
+
+
+    function displayMessage(message: string, role: "User" | "Bot") {
+        const messageId = crypto.randomUUID()
+
+        setMessages((previous) => [
+            ...previous,
+            { 
+                id: messageId,
+                text: message, 
+                role: role
+            },
+        ])
+
+
+        return messageId
+    }
+
+
+    function removeMessage(messageId: string) {
+        setMessages(previous =>
+            previous.filter(msg => msg.id !== messageId)
+        )
+    }
 
     
     if (!scenario) {
@@ -88,14 +114,7 @@ function Content() {
             
             if (response.ok) {
                 const data = await response.json()
-
-                setMessages((previous) => [
-                    ...previous,
-                    { 
-                        text: data.text, 
-                        role: "Bot" 
-                    },
-                ])
+                displayMessage(data.text, "Bot")
             }
         }
         catch {
@@ -109,6 +128,13 @@ function Content() {
 
     async function sendMessage(event: React.SubmitEvent<HTMLElement>) {
         event.preventDefault()
+
+        if (message.length == 0 || sending) {
+            return 
+        }
+
+
+        const messageId = displayMessage(message, "User")
 
         try {
             const response = await fetch(
@@ -129,18 +155,15 @@ function Content() {
             
             if (response.ok) {
                 const data = await response.json()
-
-                setMessages((previous) => [
-                    ...previous,
-                    { 
-                        text: data.text, 
-                        role: "Bot" 
-                    },
-                ])
+                displayMessage(data.text, "Bot")
+            }
+            else {
+                throw new Error("Request failed.")
             }
         }
         catch {
             setError("A network error occured.")
+            removeMessage(messageId)
         }
     }
 
@@ -190,7 +213,7 @@ function Content() {
                                 </button>
                             </div>
                         ) : messages.map((message, i) => (
-                            <TextBubble key={i} {...message} />
+                            <TextBubble key={message.id} {...message} />
                         ))}
                     </div>
 
