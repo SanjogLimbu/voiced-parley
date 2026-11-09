@@ -82,7 +82,7 @@ export default function VoiceChat({
 
                         // We should set the default voice speed to something low so it's actually understable for beginner language learners.
                         output: {
-                            speed: 0.5
+                            speed: 0.8
                         }
                     }
                 }
