@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import LoadingPage from "@/components/LoadingPage"
 import SubmitButton from "@/components/SubmitButton"
+import Notification from "@/components/Notification"
 
 //
 
@@ -94,6 +95,11 @@ function Content() {
 
 
     async function startConversation() {
+        if (starting) {
+            return 
+        }
+
+
         setStarting(true)
 
         try {
@@ -131,12 +137,24 @@ function Content() {
         
         const trimmedMessage = message.trim()
 
-        if (!trimmedMessage || sending) {
+        if (!trimmedMessage) {
+            setError("Enter a valid message first!")
+
             return 
         }
 
 
-        // Capture history before updating states.
+        if (sending) {
+            setError("Wait for a response first!")
+
+            return
+        }
+
+
+        setSending(true)
+
+        
+        // Must capture history before updating message state as setting state is an async function.
         const history = [
             ...messages,
             {
@@ -181,6 +199,9 @@ function Content() {
             setMessage(trimmedMessage)
             removeMessage(messageId)
         }
+
+
+        setSending(false)
     }
 
 
@@ -211,7 +232,10 @@ function Content() {
                         </div>
                     </header>
 
-                    <div ref={listRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-6">
+                    <div 
+                        ref={listRef} 
+                        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-6"
+                    >
                         {!conversationActive ? (
                             <div className="m-auto flex max-w-xs flex-col items-center text-center">
                                 <button 
@@ -259,6 +283,16 @@ function Content() {
                     )}
                 </div>
             </main>
+
+
+            {error && (
+                <Notification 
+                    message={error}
+                    onClose={() => {
+                        setError("")
+                    }}
+                />
+            )}
         </>
     )
 }
