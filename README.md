@@ -2,6 +2,8 @@
 
 A language practicing webapp made primarily for beginners where you're able to pick a language and a situation to roleplay in. You can then act it out by talking to an AI character in real time. If you get stuck, you can ask for help and continue on with the session.
 
+Live demo link: https://voiced-parley.vercel.app
+
 ## Tech stack
 
 - Next.js (App Router), React and TypeScript
@@ -26,6 +28,16 @@ OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### Run locally
+
+Open a terminal in the root folder and run the command to install dependencies:
+
+```bash
+npm install
+```
+
+
+You can then run the project with the command:
+
 
 ```bash
 npm run dev
