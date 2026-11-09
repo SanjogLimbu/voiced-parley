@@ -36,7 +36,7 @@ function TextBubble({ text, role }: Message) {
 function Content() {
     const searchParams = useSearchParams()
     const scenario = searchParams.get("scenario")
-    const language = searchParams.get("language")
+    const language = searchParams.get("language") || "French"
 
     const [messages, setMessages] = useState<Message[]>([])
     const [message, setMessage] = useState("")
@@ -78,7 +78,7 @@ function Content() {
                 <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background">
                     <VoiceChat
                         scenario={scenario}
-                        language={language || "French"}
+                        language={language}
                         onClose={() => setVoiceMode(false)}
                     />
                 </div>
@@ -138,6 +138,9 @@ function Content() {
             if (response.ok) {
                 const data = await response.json()
                 displayMessage(data.text, "Bot")
+            }
+            else {
+                throw new Error("Request failed.")
             }
         }
         catch {

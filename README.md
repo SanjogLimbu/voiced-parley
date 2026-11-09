@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Voiced Parley
 
-## Getting Started
+A language practicing webapp made primarily for beginners where you're able to pick a language and a situation to roleplay in. You can then act it out by talking to an AI character in real time. If you get stuck, you can ask for help and continue on with the session.
 
-First, run the development server:
+## Tech stack
+
+- Next.js (App Router), React and TypeScript
+- Tailwind CSS
+- OpenAI Realtime API and Agents SDK 
+- OpenAI Responses API 
+
+## Getting started
+
+### Requirements
+
+- Node.js and npm compatible with the project's Next.js version
+- An OpenAI API key with access to the models the project uses
+- A modern browser with granted microphone access
+
+### Configure
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Try a voice conversation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Pick a target language.
+2. Pick a scenario.
+3. Select voice mode and grant permission to use microphone.
 
-## Learn More
+If you're running the project locally on a computer make sure to have a microphone plugged in.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+app/
+  api/
+    chat/route.ts       # Text conversation
+    start/route.ts      # Start a text scenario
+    realtime/route.ts   # Short-lived realtime session credentials
+  parley/page.tsx       # Language, scenario selection, and conversation page
+components/
+  VoiceChat.tsx         # Live voice UI and session
+lib/
+  prompts.ts            # Agent instructions
+```

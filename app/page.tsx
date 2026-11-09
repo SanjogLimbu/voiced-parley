@@ -96,7 +96,7 @@ function SelectScenario(
                 e.preventDefault()
                   
                 if (isValid) {
-                  router.push(`/parley?scenario=${encodeURIComponent(prompt.trim())}&language=${language}`)
+                  router.push(`/parley?scenario=${encodeURIComponent(prompt.trim())}&language=${encodeURIComponent(language)}`)
                 }
             }}
           >
@@ -199,7 +199,7 @@ function SelectLanguage(
 
               <button
                 type="submit"
-                aria-label=""
+                aria-label="Submit language"
                 className="absolute top-1/2 right-1.5 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md bg-primary text-white transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:bg-border disabled:text-accent"
               >
                 <SubmitButton />

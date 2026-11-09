@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     }
 
 
-    const scenario = body.scenario
-    const language = body.language
+    const scenario = body?.scenario
+    const language = body?.language
 
     if (typeof scenario !== "string" || !scenario.trim() || scenario.length > 50) {
         return NextResponse.json(
@@ -33,15 +33,33 @@ export async function POST(request: Request) {
     }
 
 
-    const response = await client.responses.create({
-        model: "gpt-6-astra",
-        instructions: buildInstructions(scenario, language),
-        input: scenario,
-    })
+    if (typeof language !== "string" || !language.trim()) {
+        return NextResponse.json(
+            { error: "Invalid language." },
+            { status: 400 }
+        )
+    }
 
 
-    return NextResponse.json({
-        text: response.output_text,
-        role: "Bot"
-    })
+    try {
+        const response = await client.responses.create({
+            model: "gpt-6-astra",
+            instructions: buildInstructions(scenario, language),
+            input: scenario,
+        })
+
+
+        return NextResponse.json({
+            text: response.output_text,
+            role: "Bot"
+        })
+    }
+    catch (error) {
+        console.error("OpenAI API error:", error)
+
+        return NextResponse.json(
+            { error: "Failed to generate response." },
+            { status: 500 }
+        )
+    }
 }
