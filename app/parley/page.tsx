@@ -128,17 +128,32 @@ function Content() {
 
     async function sendMessage(event: React.SubmitEvent<HTMLElement>) {
         event.preventDefault()
+        
+        const trimmedMessage = message.trim()
 
-        if (message.length == 0 || sending) {
+        if (!trimmedMessage || sending) {
             return 
         }
 
 
-        const messageId = displayMessage(message, "User")
+        // Capture history before updating states.
+        const history = [
+            ...messages,
+            {
+                id: crypto.randomUUID(),
+                text: trimmedMessage,
+                role: "User" as const
+            }
+        ]
+
+
+        const messageId = displayMessage(trimmedMessage, "User")
+        setMessage("")
+        setError("")
 
         try {
             const response = await fetch(
-                "/api/chat",
+                "/api/chat", 
                 {
                     method: "POST",
                     headers: {
@@ -147,7 +162,7 @@ function Content() {
                     body: JSON.stringify({
                         scenario,
                         language,
-                        message
+                        messages: history
                     })
                 }
             )
@@ -163,6 +178,7 @@ function Content() {
         }
         catch {
             setError("A network error occured.")
+            setMessage(trimmedMessage)
             removeMessage(messageId)
         }
     }
@@ -202,17 +218,17 @@ function Content() {
                                     disabled={starting}
                                     onClick={startConversation}
                                     className="
-                                        w-40 h-10 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary
+                                        w-40 h-40 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary
                                     "
                                 >
                                     {starting ? (
-                                        "..." 
+                                        "Starting..." 
                                     ) : (
-                                        "Start"
+                                        "Begin"
                                     )}
                                 </button>
                             </div>
-                        ) : messages.map((message, i) => (
+                        ) : messages.map((message) => (
                             <TextBubble key={message.id} {...message} />
                         ))}
                     </div>
