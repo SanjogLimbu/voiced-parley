@@ -6,6 +6,7 @@ import Link from "next/link"
 import LoadingPage from "@/components/LoadingPage"
 import SubmitButton from "@/components/SubmitButton"
 import Notification from "@/components/Notification"
+import VoiceChat from "@/components/VoiceChat"
 
 //
 
@@ -42,6 +43,7 @@ function Content() {
     const [starting, setStarting] = useState(false) 
     const [error, setError] = useState("")
     const [sending, setSending] = useState(false)
+    const [voiceMode, setVoiceMode] = useState(false)
 
     const conversationActive = messages.length > 0
     const listRef = useRef<HTMLDivElement>(null)
@@ -49,6 +51,40 @@ function Content() {
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" })
     }, [messages])
+
+
+    if (!scenario) {
+        return (
+            <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+                <h1 className="text-2xl font-semibold">
+                    No scenario selected
+                </h1>
+
+                <p className="text-accent">
+                    Pick a scenario to start a conversation.
+                </p>
+
+                <Link href="/" className="rounded-lg bg-primary px-4 py-2 font-medium text-white transition-all hover:brightness-110">
+                    Choose a scenario
+                </Link>
+            </main>
+        )
+    }
+
+
+    if (voiceMode) {
+        return (
+            <main className="flex h-dvh justify-center p-3 sm:p-6">
+                <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background">
+                    <VoiceChat
+                        scenario={scenario}
+                        language={language || "French"}
+                        onClose={() => setVoiceMode(false)}
+                    />
+                </div>
+            </main>
+        )
+    }
 
 
     function displayMessage(message: string, role: "User" | "Bot") {
@@ -71,25 +107,6 @@ function Content() {
     function removeMessage(messageId: string) {
         setMessages(previous =>
             previous.filter(msg => msg.id !== messageId)
-        )
-    }
-
-    
-    if (!scenario) {
-        return (
-            <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-                <h1 className="text-2xl font-semibold">
-                    No scenario selected
-                </h1>
-
-                <p className="text-accent">
-                    Pick a scenario to start a conversation.
-                </p>
-
-                <Link href="/" className="rounded-lg bg-primary px-4 py-2 font-medium text-white transition-all hover:brightness-110">
-                    Choose a scenario
-                </Link>
-            </main>
         )
     }
 
@@ -238,17 +255,23 @@ function Content() {
                     >
                         {!conversationActive ? (
                             <div className="m-auto flex max-w-xs flex-col items-center text-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setVoiceMode(true)}
+                                    className="w-48 h-20 rounded-lg bg-background border border-border px-6 py-4 font-medium cursor-pointer hover:bg-primary"
+                                >
+                                    🎙️ Voice Chat
+                                </button>
+
                                 <button 
                                     disabled={starting}
                                     onClick={startConversation}
-                                    className="
-                                        w-40 h-40 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary
-                                    "
+                                    className="w-48 h-20 bg-background border border-border rounded-md cursor-pointer transition-all hover:bg-primary mt-5"
                                 >
                                     {starting ? (
                                         "Starting..." 
                                     ) : (
-                                        "Begin"
+                                        "Text Chat"
                                     )}
                                 </button>
                             </div>
