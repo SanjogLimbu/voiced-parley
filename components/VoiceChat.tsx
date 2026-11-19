@@ -74,7 +74,7 @@ export default function VoiceChat({
                 config: {
                     audio: {
                         // We set eagerness low as beginners are likely to pause a lot to think.
-                        // The AI should also be able to interrupt the user so that it's more realistic and feels more responsive.
+                        // The user should also be able to interrupt the AI so that it's more realistic and feels more responsive.
                         input: {
                             turnDetection: {
                                 type: "semantic_vad",
