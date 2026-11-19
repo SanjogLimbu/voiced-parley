@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server"
+
 import { buildInstructions } from "@/lib/prompts"
+import { prompt_refused } from "@/lib/refusal_check"
+import { MIN_SCENARIO_LENGTH, MAX_SCENARIO_LENGTH } from "@/lib/constants";
+
 import OpenAI from "openai";
 
 //
@@ -21,17 +25,15 @@ export async function POST(request: Request) {
         )
     }
 
-
-    const scenario = body?.scenario
+    const scenario = body?.scenario.trim()
     const language = body?.language
 
-    if (typeof scenario !== "string" || !scenario.trim() || scenario.length > 50) {
+    if (typeof scenario !== "string" || !scenario || scenario.length > MAX_SCENARIO_LENGTH || scenario.length < MIN_SCENARIO_LENGTH) {
         return NextResponse.json(
-            { error: "Scenario must be between 1 and 50 characters." },
+            { error: `Scenario must be between ${MIN_SCENARIO_LENGTH} and ${MAX_SCENARIO_LENGTH} characters.` },
             { status: 400 }
         )
     }
-
 
     if (typeof language !== "string" || !language.trim()) {
         return NextResponse.json(
@@ -40,14 +42,20 @@ export async function POST(request: Request) {
         )
     }
 
-
     try {
         const response = await client.responses.create({
             model: "gpt-6-astra",
             instructions: buildInstructions(scenario, language),
             input: scenario,
+            max_output_tokens: 300
         })
 
+        if (prompt_refused(response)) {
+            return NextResponse.json(
+                { text: "The model could not respond." },
+                { status: 502 }
+            )
+        }
 
         return NextResponse.json({
             text: response.output_text,

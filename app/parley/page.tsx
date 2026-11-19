@@ -71,7 +71,6 @@ function Content() {
         )
     }
 
-
     if (voiceMode) {
         return (
             <main className="flex h-dvh justify-center p-3 sm:p-6">
@@ -86,7 +85,6 @@ function Content() {
         )
     }
 
-
     function displayMessage(message: string, role: "User" | "Bot") {
         const messageId = crypto.randomUUID()
 
@@ -97,12 +95,10 @@ function Content() {
                 text: message, 
                 role: role
             },
-        ])
-
+        ].slice(-100))
 
         return messageId
     }
-
 
     function removeMessage(messageId: string) {
         setMessages(previous =>
@@ -110,12 +106,10 @@ function Content() {
         )
     }
 
-
     async function startConversation() {
         if (starting) {
             return 
         }
-
 
         setStarting(true)
 
@@ -134,23 +128,20 @@ function Content() {
                 }
             )
 
-            
             if (response.ok) {
                 const data = await response.json()
                 displayMessage(data.text, "Bot")
             }
             else {
-                throw new Error("Request failed.")
+                setError("A network error occurred.")
             }
         }
         catch {
-            setError("A network error occured.")
+            setError("A network error occurred.")
         }
-
 
         setStarting(false)
     }
-
 
     async function sendMessage(event: React.SubmitEvent<HTMLElement>) {
         event.preventDefault()
@@ -163,17 +154,14 @@ function Content() {
             return 
         }
 
-
         if (sending) {
             setError("Wait for a response first!")
 
             return
         }
 
-
         setSending(true)
 
-        
         // Must capture history before updating message state as setting state is an async function.
         const history = [
             ...messages,
@@ -183,7 +171,6 @@ function Content() {
                 role: "User" as const
             }
         ]
-
 
         const messageId = displayMessage(trimmedMessage, "User")
         setMessage("")
@@ -204,26 +191,30 @@ function Content() {
                     })
                 }
             )
-
             
             if (response.ok) {
                 const data = await response.json()
                 displayMessage(data.text, "Bot")
             }
+            else if (response.status == 502) {
+                // Remove latest message as model refused or could not generate a response (guard rails probably flagged).
+                removeMessage(messageId)
+                setError("Prompt was rejected.")
+            }
             else {
-                throw new Error("Request failed.")
+                setMessage(trimmedMessage)
+                removeMessage(messageId)
+                setError("A network error occurred.")
             }
         }
         catch {
-            setError("A network error occured.")
             setMessage(trimmedMessage)
             removeMessage(messageId)
+            setError("A network error occurred.")
         }
-
 
         setSending(false)
     }
-
 
     return (
         <>
@@ -290,6 +281,7 @@ function Content() {
                         >
                             <input
                                 className="input_box"
+                                maxLength={100}
                                 placeholder="Type your message..."
                                 aria-label="Message"
                                 autoFocus
@@ -322,7 +314,6 @@ function Content() {
         </>
     )
 }
-
 
 export default function Parley() {
     return (

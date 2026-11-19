@@ -21,11 +21,9 @@ export async function POST() {
             }
         )
 
-        
         if (!response.ok) {
             throw new Error("Failed to create realtime session.")
         }
-
 
         const data = await response.json()
 

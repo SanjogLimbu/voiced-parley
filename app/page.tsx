@@ -7,6 +7,8 @@ import Image from "next/image"
 import LinkButton from "@/components/LinkButton"
 import SubmitButton from "@/components/SubmitButton"
 
+import { MIN_SCENARIO_LENGTH, MAX_SCENARIO_LENGTH, MAX_USER_LENGTH } from "@/lib/constants"
+
 //
 
 const SCENARIOS = [
@@ -35,9 +37,6 @@ const LANGUAGES = [
   { name: "Japanese", flag: "/flags/jp.svg" },
   { name: "Korean", flag: "/flags/kr.svg" },
 ]
-
-const MIN_LENGTH = 5
-const MAX_LENGTH = 50
 
 //
 
@@ -68,8 +67,8 @@ function SelectScenario(
 
   const length = prompt.trim().length
   const error = length === 0 ? null
-      : length < MIN_LENGTH ? "Scenario is too short."
-      : length > MAX_LENGTH ? "Scenario is too long."
+      : length < MIN_SCENARIO_LENGTH ? "Scenario is too short."
+      : length > MAX_SCENARIO_LENGTH ? "Scenario is too long."
       : null
   const isValid = length > 0 && !error
 
@@ -125,15 +124,14 @@ function SelectScenario(
                 {error}
               </span>
 
-              <span className={length > MAX_LENGTH ? "text-danger" : "text-accent"}>
-                {length}/{MAX_LENGTH}
+              <span className={length > MAX_SCENARIO_LENGTH ? "text-danger" : "text-accent"}>
+                {length}/{MAX_SCENARIO_LENGTH}
               </span>
           </div>
       </section>
     </>
   )
 }
-
 
 function SelectLanguage(
 { 
@@ -195,6 +193,7 @@ function SelectLanguage(
                 placeholder="Another language"
                 aria-label="Custom language"
                 aria-describedby="language-hint"
+                maxLength={MAX_USER_LENGTH}
               />
 
               <button

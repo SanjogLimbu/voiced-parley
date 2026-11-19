@@ -1,6 +1,10 @@
 
 import { NextResponse } from "next/server"
+
 import { buildInstructions } from "@/lib/prompts"
+import { prompt_refused } from "@/lib/refusal_check"
+import { MAX_USER_LENGTH, MAX_BOT_LENGTH } from "@/lib/constants"
+
 import OpenAI from "openai"
 
 //
@@ -20,20 +24,19 @@ function isValidMessage(msg: ChatMessage) {
         return false
     }
 
+    const maxLength = msg.role === "User" ? MAX_USER_LENGTH : MAX_BOT_LENGTH
 
     return (
         (msg.role === "User" || msg.role === "Bot") &&
         typeof msg.text === "string" &&
         msg.text.trim() &&
-        msg.text.length <= 1000
+        msg.text.length <= maxLength
     )
 }
-
 
 function isValidHistory(messages: ChatMessage[]) {
     return (
         Array.isArray(messages) &&
-        messages.length <= 40 &&
         messages.every(isValidMessage) &&
         messages.at(-1)?.role === "User"
     )
@@ -54,7 +57,6 @@ export async function POST(request: Request) {
         )
     }
 
-
     const scenario = body?.scenario
     const language = body?.language
     const messages = body?.messages
@@ -66,7 +68,6 @@ export async function POST(request: Request) {
         )
     }
 
-    
     if (!isValidHistory(messages)) {
         return NextResponse.json(
             { error: "Invalid conversation history." },
@@ -74,6 +75,12 @@ export async function POST(request: Request) {
         )
     }
 
+    // Truncate message history to save on AI context limit.
+    const length = messages.length 
+
+    if (length > 100) {
+        messages.splice(0, length - 100)
+    }
 
     // Must convert roles to match OpenAI API
     const history = (messages as ChatMessage[]).map(msg => ({
@@ -83,7 +90,6 @@ export async function POST(request: Request) {
         content: msg.text
     }))
 
-
     try {
         const response = await client.responses.create({
             model: "gpt-6-astra",
@@ -92,6 +98,12 @@ export async function POST(request: Request) {
             max_output_tokens: 300
         })
 
+        if (prompt_refused(response)) {
+            return NextResponse.json(
+                { text: "The model could not respond." },
+                { status: 502 }
+            )
+        }
 
         return NextResponse.json({
             text: response.output_text,

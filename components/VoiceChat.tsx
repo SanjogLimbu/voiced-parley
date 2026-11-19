@@ -17,18 +17,21 @@ export default function VoiceChat({
 }) {
     const sessionRef = useRef<RealtimeSession | null>(null)
     const connectingRef = useRef(false)
+    const unmountedRef = useRef(false)
 
     const [connected, setConnected] = useState(false)
     const [connecting, setConnecting] = useState(false)
     const [error, setError] = useState("")
 
     useEffect(() => {
+        unmountedRef.current = false
+
         return () => {
+            unmountedRef.current = true
             sessionRef.current?.close()
             sessionRef.current = null
         }
     }, [])
-
 
     async function startVoice() {
         if (connectingRef.current || sessionRef.current) {
@@ -50,19 +53,21 @@ export default function VoiceChat({
                 }
             )
 
-
             if (!response.ok) {
                 throw new Error("Unable to create voice session.")
             }
 
-
             const { token } = await response.json()
+
+            // Check if component unmounted while fetching the token so we don't try to speak to someone who isn't there.
+            if (unmountedRef.current) {
+                return
+            }
 
             const agent = new RealtimeAgent({
                 name: "Voiced Parley",
                 instructions: buildVoiceInstructions(scenario, language)
             })
-
 
             session = new RealtimeSession(agent, {
                 model: "gpt-realtime-2.1",
@@ -88,16 +93,19 @@ export default function VoiceChat({
                 }
             })
 
-
             sessionRef.current = session
 
             await session.connect({
                 apiKey: token
             })
 
+            if (unmountedRef.current) {
+                session.close()
+
+                return
+            }
 
             setConnected(true)
-
 
             // The AI should speak first to initiate the conversation as beginners may not know how to.
             session.sendMessage(
@@ -119,14 +127,12 @@ export default function VoiceChat({
         }
     }
 
-
     function endVoice() {
         sessionRef.current?.close()
         sessionRef.current = null
         setConnected(false)
         onClose()
     }
-
 
     return (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
@@ -163,13 +169,14 @@ export default function VoiceChat({
                     type="button"
                     onClick={startVoice}
                     disabled={connecting}
-                    className="rounded-lg bg-primary px-6 py-3 text-white disabled:opacity-50 cursor-pointer"
+                    className="rounded-lg bg-primary px-6 py-3 text-white cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {connecting ? "Connecting..." : "Start speaking"}
                 </button>
             )}
 
             <button
+                disabled={connecting}
                 type="button"
                 onClick={endVoice}
                 className="rounded-lg border border-border px-6 py-3 cursor-pointer hover:bg-surface"
