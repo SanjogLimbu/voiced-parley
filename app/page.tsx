@@ -7,7 +7,7 @@ import Image from "next/image"
 import LinkButton from "@/components/LinkButton"
 import SubmitButton from "@/components/SubmitButton"
 
-import { MIN_SCENARIO_LENGTH, MAX_SCENARIO_LENGTH, MAX_USER_LENGTH } from "@/lib/constants"
+import { MIN_SCENARIO_LENGTH, MAX_SCENARIO_LENGTH, MIN_LANGUAGE_LENGTH, MAX_LANGUAGE_LENGTH } from "@/lib/constants"
 
 //
 
@@ -139,6 +139,11 @@ function SelectLanguage(
 } : { 
   onSelect: (language: string) => void 
 }) {
+    const [customLanguage, setCustomLanguage] = useState("")
+
+    const length = customLanguage.trim().length
+    const error = length > 0 && length < MIN_LANGUAGE_LENGTH ? "Language is too short." : null
+
     return (
         <fieldset className="mt-15 w-full max-w-xl">
             <legend className="mb-4 w-full text-center text-sm text-accent">
@@ -179,21 +184,20 @@ function SelectLanguage(
               onSubmit={(e) => {
                 e.preventDefault()
 
-                const formData = new FormData(e.currentTarget)
-                const language = String(formData.get("language") ?? "").trim()
-
-                if (language) {
-                  onSelect(language)
+                if (length >= MIN_LANGUAGE_LENGTH) {
+                  onSelect(customLanguage.trim())
                 }
               }}
             >
               <input
-                name="language"
                 className="input_box pr-12"
                 placeholder="Another language"
                 aria-label="Custom language"
+                aria-invalid={!!error}
                 aria-describedby="language-hint"
-                maxLength={MAX_USER_LENGTH}
+                maxLength={MAX_LANGUAGE_LENGTH}
+                value={customLanguage}
+                onChange={(e) => setCustomLanguage(e.target.value)}
               />
 
               <button
@@ -204,6 +208,12 @@ function SelectLanguage(
                 <SubmitButton />
               </button>
             </form>
+
+            <div id="language-hint" className="mt-2 text-xs">
+              <span className="text-danger">
+                {error}
+              </span>
+            </div>
         </fieldset>
     );
 }
