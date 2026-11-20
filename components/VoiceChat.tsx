@@ -109,8 +109,7 @@ export default function VoiceChat({
 
             // The AI should speak first to initiate the conversation as beginners may not know how to.
             session.sendMessage(
-                "Start the roleplay by greeting the learner " +
-                "naturally in the target language."
+                "Start the roleplay by greeting the learner naturally in the target language."
             )
 
         } 
