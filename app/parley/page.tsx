@@ -239,16 +239,35 @@ function Content() {
             <main className="flex h-dvh justify-center p-3 sm:p-6">
                 <div className="flex w-full max-w-3xl min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl shadow-black/40">
                     <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-                        <Link
-                            href="/"
-                            aria-label="Back to scenarios"
-                            className="
-                                flex h-9 w-20 bg-background border border-border items-center justify-center rounded-lg text-accent transition-colors 
-                                hover:bg-primary hover:text-foreground
-                            "
-                        >
-                            Return
-                        </Link>
+                        {conversationActive ? (
+                            <button
+                                type="button"
+                                aria-label="Back to chat modes"
+                                disabled={sending}
+                                onClick={() => {
+                                    setMessages([])
+                                    setMessage("")
+                                    setError("")
+                                }}
+                                className="
+                                    flex h-9 w-20 bg-background border border-border items-center justify-center rounded-lg text-accent transition-colors cursor-pointer
+                                    hover:bg-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50
+                                "
+                            >
+                                Return
+                            </button>
+                        ) : (
+                            <Link
+                                href="/"
+                                aria-label="Back to scenarios"
+                                className="
+                                    flex h-9 w-20 bg-background border border-border items-center justify-center rounded-lg text-accent transition-colors
+                                    hover:bg-primary hover:text-foreground
+                                "
+                            >
+                                Return
+                            </Link>
+                        )}
 
                         <div className="min-w-0">
                             <p className="text-xs uppercase tracking-widest text-accent">
