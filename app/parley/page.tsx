@@ -32,6 +32,24 @@ function TextBubble({ text, role }: Message) {
     )
 }
 
+function TypingIndicator() {
+    return (
+        <div
+            role="status"
+            aria-label="AI is responding"
+            className="mr-auto flex w-fit items-center gap-1 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3.5"
+        >
+            {[0, 150, 300].map((delay) => (
+                <span
+                    key={delay}
+                    className="h-2 w-2 animate-bounce rounded-full bg-accent"
+                    style={{ animationDelay: `${delay}ms` }}
+                />
+            ))}
+        </div>
+    )
+}
+
 
 function Content() {
     const searchParams = useSearchParams()
@@ -50,7 +68,7 @@ function Content() {
 
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" })
-    }, [messages])
+    }, [messages, sending])
 
 
     if (!scenario) {
@@ -269,9 +287,15 @@ function Content() {
                                     )}
                                 </button>
                             </div>
-                        ) : messages.map((message) => (
-                            <TextBubble key={message.id} {...message} />
-                        ))}
+                        ) : (
+                            <>
+                                {messages.map((message) => (
+                                    <TextBubble key={message.id} {...message} />
+                                ))}
+
+                                {sending && <TypingIndicator />}
+                            </>
+                        )}
                     </div>
 
                     {conversationActive && (
